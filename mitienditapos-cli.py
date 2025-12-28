@@ -7,7 +7,26 @@ import csv
 MiTiendita POS - Command Line Interface
 A simple point of sale system for small businesses.
 """
-
+# Leer precios desde CSV
+def prices_csv(file_path):
+    product_id = input("Ingrese el ID del producto: ").strip()
+    precio_encontrado = None
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = csv.DictReader(file, delimiter=',')
+            for fila in data:
+                if fila['ID'] == product_id:
+                    precio_encontrado = fila['PRECIO']
+                    break
+        if precio_encontrado:
+            print(f"El precio del producto con ID '{product_id}' es: {precio_encontrado}")
+            return precio_encontrado
+        else:
+            print(f"No se encontro el producto con ID: {product_id}")
+            return None
+    except FileNotFoundError:
+        print(f"No se encontro el archivo: {file_path}")
+# Leer y mostrar productos desde CSV
 def read_csv(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -19,7 +38,7 @@ def read_csv(file_path):
                 print('')
     except FileNotFoundError:
         print(f"No se encontro el archivo: {file_path}")
-
+# Escribir datos en CSV
 def write_csv(file_path, data):
     try:
         with open(file_path, 'a', encoding='utf-8', newline='') as file:
@@ -44,23 +63,37 @@ def main():
         print("6. Salir")
         
         choice = input("\nSeleccione una opción: ").strip()
-        
+        # TODO: Implementar sistema de compras
         match choice:
+            # Nueva compra
             case "1":
                 print("Cargando el catálogo...")
                 # Leer archivo productos.csv
                 catalogo_csv = "productos.csv"
                 read_csv(catalogo_csv)
-
                 # Seleccionar productos para la compra
-
-
+                prices_csv(catalogo_csv)
+                print("Desea agregar el producto? (s/n)")
+                choice = input().strip()
+                if choice != "s":
+                    print("Producto no agregado.")
+                    continue
+                else:
+                    print("Producto agregado a la compra.")
+                # Agregar otro producto (s/n)
+                print("Desea agregar otro producto? (s/n)")
+                again = input().strip().lower()
+                if again != "s":
+                    break
+                else:
+                    continue
+            # Ver productos
             case "2":
                 print("Cargando el catálogo...")
                 # Leer archivo productos.csv
                 catalogo_csv = "productos.csv"
                 read_csv(catalogo_csv)
-
+            # Invantario
             case "3":
                 while True:
                     print("\nMenú de Inventario:")
