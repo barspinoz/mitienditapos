@@ -60,8 +60,7 @@ def main():
                 # Leer archivo productos.csv
                 catalogo_csv = "productos.csv"
                 read_csv(catalogo_csv)
-               
-            # TODO: Implementar la funcionalidad de inventario
+
             case "3":
                 while True:
                     print("\nMenú de Inventario:")
@@ -79,32 +78,50 @@ def main():
                             catalogo_csv = "productos.csv"
                             read_csv(catalogo_csv)
                         case "2":
+                            print("Ingrese el ID del nuevo producto:")
+                            id_producto = input().strip()
                             print("Ingrese el nombre del nuevo producto:")
                             nuevo_producto = input().strip()
                             print("Ingrese el precio del nuevo producto:")
                             precio_producto = input().strip()
-                            print(f"El producto '{nuevo_producto}' con precio '{precio_producto}' sera agregado al inventario.")
+                            print(f"El producto '{nuevo_producto}' con precio '{precio_producto}' y con ID '{id_producto}' sera agregado al inventario.")
+                            write_csv(catalogo_csv, [id_producto, nuevo_producto, precio_producto])
+                            print("Producto agregado exitosamente.")
+                            # Agregar otro producto (s/n)
                             print("Desea agregar otro producto? (s/n)")
+                            again = input().strip().lower()
+                            if again != "s":
+                                break
+                            else:
+                                continue
 
                         case "3":
-                            print("Funcionalidad de eliminar producto no implementada aún.")
+                            print("Cargando el catálogo...")
+                            # Leer archivo productos.csv
+                            catalogo_csv = "productos.csv"
+                            read_csv(catalogo_csv)
+                            print("Ingrese el ID del producto a eliminar:")
+                            eliminar_producto = input().strip()
+                            print(f"El producto con ID '{eliminar_producto}' sera eliminado del inventario.")
+                            # Eliminar producto del archivo CSV
+                            try:
+                                lines = []
+                                with open(catalogo_csv, 'r', encoding='utf-8') as file:
+                                    reader = csv.reader(file)
+                                    for row in reader:
+                                        if row[0] != eliminar_producto:
+                                            lines.append(row)
+                                with open(catalogo_csv, 'w', encoding='utf-8', newline='') as file:
+                                    writer = csv.writer(file)
+                                    writer.writerows(lines)
+                                print("Producto eliminado exitosamente.")
+                            except Exception as e:
+                                print(f"Error al eliminar el producto: {e}")       
                         case "4":
                             break
                         case _:
                             print("Opción inválida. Por favor, inténtelo de nuevo.")
 
-
-                """
-                print("Funcionalidad de inventario no implementada aún.")
-                print("¿Desea realizar otra operación? (s/n)")
-                again = input().strip().lower()
-                if again != "s":
-                    print("Gracias por usar MiTiendita POS")
-                    sys.exit(0)
-                else:
-                    continue
-                """
-    
             case "4":
                 print("Funcionalidad de reportes no implementada aún.")
             case "5":
