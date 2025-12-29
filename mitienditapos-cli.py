@@ -1,31 +1,24 @@
 import sys
 from pathlib import Path
 import csv
+import datetime
 
 #!/usr/bin/env python3
 """
 MiTiendita POS - Command Line Interface
 A simple point of sale system for small businesses.
 """
-# Leer precios desde CSV
-def prices_csv(file_path):
-    product_id = input("Ingrese el ID del producto: ").strip()
-    precio_encontrado = None
+def leer_archivo(nombre_archivo):
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            data = csv.DictReader(file, delimiter=',')
-            for fila in data:
-                if fila['ID'] == product_id:
-                    precio_encontrado = fila['PRECIO']
-                    break
-        if precio_encontrado:
-            print(f"El precio del producto con ID '{product_id}' es: {precio_encontrado}")
-            return precio_encontrado
-        else:
-            print(f"No se encontro el producto con ID: {product_id}")
-            return None
+        # 'r' significa modo lectura (read)
+        # encoding='utf-8' es importante para acentos y eñes
+        with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
+            contenido = archivo.read()
+            print(contenido)
     except FileNotFoundError:
-        print(f"No se encontro el archivo: {file_path}")
+        print(f"Error: No se encontró el archivo '{nombre_archivo}'")
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
 # Leer y mostrar productos desde CSV
 def read_csv(file_path):
     try:
@@ -51,8 +44,7 @@ def main():
     print("Bienvenido a MiTiendita POS")
     print("=" * 40)
 
-    # Menu principal
-    
+    # Menu principal    
     while True:
         print("\nMenú principal:")
         print("1. Nueva compra")
@@ -63,30 +55,47 @@ def main():
         print("6. Salir")
         
         choice = input("\nSeleccione una opción: ").strip()
-        # TODO: Implementar sistema de compras
+        # Catalogo de productos
+        catalogo_csv = "productos.csv"
         match choice:
             # Nueva compra
             case "1":
                 print("Cargando el catálogo...")
                 # Leer archivo productos.csv
-                catalogo_csv = "productos.csv"
                 read_csv(catalogo_csv)
                 # Seleccionar productos para la compra
-                prices_csv(catalogo_csv)
-                print("Desea agregar el producto? (s/n)")
-                choice = input().strip()
-                if choice != "s":
-                    print("Producto no agregado.")
-                    continue
-                else:
-                    print("Producto agregado a la compra.")
-                # Agregar otro producto (s/n)
-                print("Desea agregar otro producto? (s/n)")
-                again = input().strip().lower()
-                if again != "s":
-                    break
-                else:
-                    continue
+                lista_productos = []
+                while True:
+                    product_id = input("Ingrese el ID del producto: ").strip()
+                    precio_encontrado = None
+                    try:
+                        with open(catalogo_csv, 'r', encoding='utf-8') as file:
+                            data = csv.DictReader(file, delimiter=',')
+                            for fila in data:
+                                if fila['ID'] == product_id:
+                                    precio_encontrado = fila['PRECIO']
+                                    break
+                    except FileNotFoundError:
+                        print(f"No se encontro el archivo: {catalogo_csv}")
+
+                    if precio_encontrado:
+                        lista_productos.append((product_id, precio_encontrado))
+                        print(f"Producto con ID '{product_id}' agregado a la compra.")
+                        print("¿Desea agregar otro producto? (s/n)")
+                        again = input().strip().lower()
+                        if again != "s":
+                            break
+                        else:
+                            continue
+                    else:
+                        print("Producto no encontrado. Intente nuevamente.")
+                
+                print("\nProductos en la compra:")
+                total = 0
+                for prod in lista_productos:
+                    print(f"ID: {prod[0]}, Precio: {prod[1]}")
+                    total += float(prod[1])
+                print(f"Total a pagar: {total:.2f}")
             # Ver productos
             case "2":
                 print("Cargando el catálogo...")
@@ -154,9 +163,39 @@ def main():
                             break
                         case _:
                             print("Opción inválida. Por favor, inténtelo de nuevo.")
-
+            # TODO: Implementar sistema de reportes
             case "4":
-                print("Funcionalidad de reportes no implementada aún.")
+                while True:
+                    print("\nMenú de Reportes:")
+                    print("1. Generar reporte de ventas diarias")
+                    print("2. Ver reportes de ventas anteriores")
+                    print("3. Volver al menú principal")
+                    
+                    rep_choice = input("\nSeleccione una opción: ").strip()
+                    
+                    match rep_choice:
+                        case "1":
+                            hoy = datetime.date.today().strftime("%Y-%m-%d")
+                            ahora = datetime.datetime.now()
+                            str_fecha = ahora.strftime("%Y-%m-%d %H:%M:%S")
+                            nombre_reporte = f"reporte_ventas_{hoy}.txt"
+                            try:
+                                # Crear archivo de reporte
+                                with open(nombre_reporte, "w", encoding="utf-8") as file:
+                                    file.write("Reporte de ventas diarias\n")
+                                    file.write(f"Fecha: {hoy}\n")
+                                    file.write("ID Producto,Nombre,Cantidad,Venta Total\n")
+                                    file.write("--------------------------------------------------\n")
+                                    file.write(f"Última actualización: {str_fecha}\n")
+                                print(f"Reporte generado exitosamente: {nombre_reporte}")
+                            except Exception as e:
+                                print(f"Error al generar el reporte: {e}")
+                        case "2":
+                            print("Funcionalidad de reporte de productos más vendidos no implementada aún.")
+                        case "3":
+                            break
+                        case _:
+                            print("Opción inválida. Por favor, inténtelo de nuevo.")
             case "5":
                 print("Funcionalidad de configuración no implementada aún.")
             case "6":
